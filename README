@@ -1,0 +1,58 @@
+Automated Jenkins Branching
+
+The purpose of this project is to reduce the amount of time taken to copy a set of jobs and configure them 
+to build and deploy a new code branch. 
+
+This is achieved via the use of XML job templates and the Jenkins CLI java utility, driven by an Ant script.
+
+Location in source control: $/LightYear/jenkins/branch_automation
+Prerequisites: 	Ant 1.9.0 or above installed on the PATH
+		Java 1.7 or above installed on the PATH
+
+Ant targets
+
+	create-branch		Create a project branch based on a set of job templates. Properties: project+branch
+	create-pipeline-view  	Create a pipeline view. Properties: project+branch
+	delete-branch    	Delete a project branch from Jenkins. Properties: project+branch
+	delete-pipeline-view  	Delete a pipeline view. Properties: project+branch
+	disable-branch   	Disable all jobs in a project branch. Properties: project+branch
+	enable-branch    	Enable all jobs in a project branch. Properties: project+branch
+	get-job          		Download a job from jenkins as an XML file. Properties: job
+	update-branch    	Update an existing branch based on a set of job templates. Properties: project+branch
+
+How to set up a project template
+
+	1. Create a folder in the "projects" directory called "TestProject"
+	2. For each job currently in Jenkins you want to template, run the following command;
+
+		ant get-job -Djob=<job name>
+	
+	3. The job definitions will now be in the root of the Jenkins-Branching project folder as XML files
+	4. Rename the xml files, replacing branch names with @BRANCH@ tokens
+
+		eg. "TestProject 5.1 - Build Package.xml" is renamed to "TestProject @BRANCH@ - Build Package.xml"
+
+	5. Edit each xml file to replace branch name references with @BRANCH@ tokens
+	6. Move the XML files into the projects/TestProject folder
+
+Using the templates to create a set of jobs to build a branch
+
+	ant create-branch -Dproject=<project name> -Dbranch=<branch name>
+
+	eg. ant create-branch -Dproject=TestProject -Dbranch=5.2
+
+Create a pipeline view for a branch
+
+	ant create-pipeline-view -Dproject=<project name> -Dbranch=<branch name>
+
+	eg. ant create-pipeline-view -Dproject=TestProject -Dbranch=5.2
+
+	This will create a pipeline view called TestProject 5.2 Pipeline
+
+Temporarily disabling a branch in Jenkins
+
+	ant disable-branch -Dproject=<project name> -Dbranch=<branch name>
+
+	eg. ant disable-branch -Dproject=TestProject -Dbranch=5.2
+
+	All jobs defined in the TestProject folder with branch 5.2 will be temporarily disabled

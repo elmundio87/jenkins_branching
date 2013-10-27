@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Branch R9 and other projects in Jenkins</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>command</name>
+          <description>Either create or delete the branch in Jenkins (create by default). You can also enable/disable a branch.</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>create</string>
+              <string>delete</string>
+              <string>enable</string>
+              <string>disable</string>
+              <string>update</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
+          <name>project</name>
+          <description>The project to branch</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>@PROJECTS@</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>branch</name>
+          <description>The name of the branch</description>
+          <defaultValue>ReleaseXX</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class="hudson.plugins.tfs.TeamFoundationServerScm" plugin="tfs@1.20">
+    <serverUrl>http://tfs:8080/tfs/</serverUrl>
+    <projectPath>$/LightYear/jenkins/branch_automation</projectPath>
+    <localPath>.</localPath>
+    <workspaceName>Hudson-${JOB_NAME}-${NODE_NAME}</workspaceName>
+    <userPassword>ZG90bmV0</userPassword>
+    <userName>FOURTH\TFSService</userName>
+    <useUpdate>true</useUpdate>
+  </scm>
+  <assignedNode>Slavy_McSlave</assignedNode>
+  <canRoam>false</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class="vector"/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Ant plugin="ant@1.2">
+      <targets>${command}-branch ${command}-pipeline-view -Dproject=${project} -Dbranch=${branch}</targets>
+      <antName>(Default)</antName>
+      <antOpts>-Xmx512m</antOpts>
+    </hudson.tasks.Ant>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>

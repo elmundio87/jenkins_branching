@@ -1,0 +1,255 @@
+<project basedir="." name="jenkins-branching">
+  <description>Easily branch in Jenkins using job templates</description>
+
+  <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="lib/ant-contrib-1.0b3.jar"/>
+
+  <property name="jenkins.url" value="http://tfsbuild:8080"/>
+
+   <java fork="true" jar="lib/jenkins-cli.jar">
+      <arg value="-s"/>
+      <arg value="${jenkins.url}"/>
+      <arg value="login"/>
+      <arg value="--username"/>
+      <arg value="tfsservice"/>
+      <arg value="--password"/>
+      <arg value="dotnet"/>
+    </java>
+    
+  <target name="command-job" >
+    <propertyregex property="job"
+    input="${xmlfile}" regexp="^(.*)\\(.*).xml"
+    select="\2"
+    casesensitive="false" />
+
+    <echo>${command}-job: ${job}</echo>
+
+    <java fork="true" input="${xmlfile}" maxmemory="512m" jar="lib/jenkins-cli.jar">
+      <arg value="-s"/>
+      <arg value="${jenkins.url}"/>
+      <arg value="${command}-job"/>
+      <arg value="${job}"/>
+    </java>
+  </target>
+
+  <target name="get-job" description="Download a job from jenkins as an XML file.">
+
+    <java fork="true" jar="lib/jenkins-cli.jar" output="${job}.xml">
+      <arg value="-s"/>
+      <arg value="${jenkins.url}"/>
+      <arg value="get-job"/>
+      <arg value="${job}"/>
+    </java>
+
+    <echo>Insert @BRANCH@ tokens where appropriate, then move the file into the appropriate project folder</echo>
+
+  </target>
+
+  <target name="create-job">
+    <antcall target="command-job">
+      <param name="command" value="create"/>
+    </antcall>
+  </target>
+
+  <target name="delete-job">
+    <antcall target="command-job">
+      <param name="command" value="delete"/>
+    </antcall>
+  </target>
+
+  <target name="update-job">
+    <antcall target="command-job">
+      <param name="command" value="update"/>
+    </antcall>
+  </target>
+
+  <target name="disable-job">
+    <antcall target="command-job">
+      <param name="command" value="disable"/>
+    </antcall>
+  </target>
+
+  <target name="enable-job">
+    <antcall target="command-job">
+      <param name="command" value="enable"/>
+    </antcall>
+  </target>
+
+  <target name="filter-xml">
+
+    <antcall target="clean"/>
+
+    <script language="javascript">
+      <![CDATA[
+            var before = project.getProperty("branch");
+            var letter = before.substring(0,1) ;
+            var number = before.match(/\d+(,\d+)?/);
+            if(number == null){
+              number = "";
+            }
+            else
+            {
+              number = number[0];
+            }
+            project.setProperty("branch.short", letter + number);
+          ]]>
+    </script>
+
+    <copy todir="temp">
+      <fileset dir="projects/${project}">
+        <include name="*"/>
+      </fileset>
+      <filterset>
+        <filter token="PROJECT" value="${project}"/>
+        <filter token="BRANCH" value="${branch}"/>
+        <filter token="BRANCH.SHORT" value="${branch.short}"/>
+      </filterset>
+      <mapper from="(.*)" to="${project} ${branch} - \1" type="regexp"/>
+    </copy>
+
+    <copy todir="temp">
+      <fileset dir="projects/${project}">
+        <include name="pipeline_view"/>
+      </fileset>
+      <filterset>
+        <filter token="PROJECT" value="${project}"/>
+        <filter token="BRANCH" value="${branch}"/>
+      </filterset>
+    </copy>
+
+  </target>
+
+  <target name="create-branch" depends="filter-xml" description="Create a project branch based on a set of job templates. Properties: project+branch">
+
+    <foreach target="create-job" param="xmlfile">
+      <path>
+        <fileset dir="temp">
+          <include name="*.xml"/>
+        </fileset>
+      </path>
+    </foreach>
+
+  </target>
+
+  <target name="create-pipeline-view" depends="filter-xml" description="Create a pipeline view. Properties: project+branch">
+    <echo>create-pipeline-view: ${project} ${branch}</echo>
+    <java fork="true" maxmemory="512m" jar="lib/jenkins-cli.jar">
+      <arg value="-s"/>
+      <arg value="${jenkins.url}"/>
+      <arg value="groovy"/>
+      <arg value="temp/pipeline_view"/>
+    </java>
+    <echo>Pipeline "${project} ${branch} Pipeline" has been created</echo>
+  </target>
+
+  <target name="delete-pipeline-view" description="Delete a pipeline view. Properties: project+branch">
+    <echo>delete-pipeline-view: ${project} ${branch}</echo>
+    <post to="${jenkins.url}/view/${project}%20${branch}%20Pipeline/doDelete" verbose="false"/>
+    <echo>Pipeline "${project} ${branch} Pipeline" has been deleted</echo>
+  </target>
+
+  <target name="update-pipeline-view" description="Delete a pipeline view. Properties: project+branch">
+    <echo>TODO</echo>
+  </target>
+
+  <target name="enable-pipeline-view" description="Enable a pipeline view. Properties: project+branch">
+    <echo>TODO</echo>
+  </target>
+
+  <target name="disable-pipeline-view" description="Disable a pipeline view. Properties: project+branch">
+    <echo>TODO</echo>
+  </target>
+
+
+  <target name="delete-branch" depends="filter-xml" description="Delete a project branch from Jenkins. Properties: project+branch">
+
+    <foreach target="delete-job" param="xmlfile">
+      <path>
+        <fileset dir="temp">
+          <include name="*.xml"/>
+        </fileset>
+      </path>
+    </foreach>
+
+  </target>
+
+  <target name="update-branch" depends="filter-xml" description="Update an existing branch based on a set of job templates. Properties: project+branch">
+
+    <foreach target="update-job" param="xmlfile">
+      <path>
+        <fileset dir="temp">
+          <include name="*.xml"/>
+        </fileset>
+      </path>
+    </foreach>
+
+  </target>
+
+  <target name="disable-branch" depends="filter-xml" description="Disable all jobs in a project branch. Properties: project+branch">
+
+    <foreach target="disable-job" param="xmlfile">
+      <path>
+        <fileset dir="temp">
+          <include name="*.xml"/>
+        </fileset>
+      </path>
+    </foreach>
+
+  </target>
+
+  <target name="enable-branch" depends="filter-xml" description="Enable all jobs in a project branch. Properties: project+branch">
+
+    <foreach target="enable-job" param="xmlfile">
+      <path>
+        <fileset dir="temp">
+          <include name="*.xml"/>
+        </fileset>
+      </path>
+    </foreach>
+
+  </target>
+
+  <target name="clean" description="Delete all files in the temp directory" >
+    <mkdir dir="temp" />
+
+    <delete>
+      <fileset dir="temp" includes="*"/>
+    </delete>
+  </target>
+
+  <target name="update-branching-job" depends="clean">
+
+    <dirset id="projects" dir="projects">
+      <include name="/*"/>
+    </dirset>
+
+    <pathconvert
+    refid="projects"
+    pathsep="${line.separator}"
+    property="projects.list">
+      <map from="${basedir}/Projects/" to="" />
+    </pathconvert>
+
+    <script language="javascript">
+      <![CDATA[
+            var before = project.getProperty("projects.list");
+            project.setProperty("projects.list.xml", before.replaceAll("\r\n", "</string>\r\n<string>")) + "</string>";
+          ]]>
+    </script>
+
+    <copy todir="temp">
+      <fileset dir="${basedir}">
+        <include name="jenkins-branching.xml"/>
+      </fileset>
+      <filterset>
+        <filter token="PROJECTS" value="${projects.list.xml}"/>
+      </filterset>
+    </copy>
+
+    <antcall target="update-job">
+      <param name="job" value="jenkins-branching"/>
+      <param name="xmlfile" value="temp/jenkins-branching.xml"/>
+    </antcall>
+
+  </target>
+
+</project>
