@@ -2,17 +2,17 @@
   <description>Easily branch in Jenkins using job templates</description>
 
   <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="lib/ant-contrib-1.0b3.jar"/>
-
-  <property name="jenkins.url" value="http://tfsbuild:8080"/>
+  
+  <property file="build.properties" />
 
    <java fork="true" jar="lib/jenkins-cli.jar">
       <arg value="-s"/>
       <arg value="${jenkins.url}"/>
       <arg value="login"/>
       <arg value="--username"/>
-      <arg value="tfsservice"/>
+      <arg value="${jenkins.username}"/>
       <arg value="--password"/>
-      <arg value="dotnet"/>
+      <arg value="${jenkins.password}"/>
     </java>
     
   <target name="command-job" >
