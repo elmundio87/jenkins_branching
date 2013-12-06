@@ -1,7 +1,7 @@
 <project basedir="." name="jenkins-branching">
   <description>Easily branch in Jenkins using job templates</description>
   <property environment="env" />
-  <property name="BRANCH.SHORT" value="${BRANCH}">
+  <property name="BRANCH.SHORT" value="${BRANCH}"/>
   
   <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="lib/ant-contrib-1.0b3.jar"/>
     <tstamp>
@@ -47,6 +47,11 @@
 
     <echo>Insert @BRANCH@ tokens where appropriate, then move the file into the appropriate project folder</echo>
 
+  </target>
+
+  <target name="create-project">
+    <mkdir dir="projects/${project}" />
+    <copy file="res/pipeline_view" todir="projects/${project}"/>
   </target>
 
   <target name="create-job">

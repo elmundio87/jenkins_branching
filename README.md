@@ -12,6 +12,7 @@ This is achieved via the use of XML job templates and the Jenkins CLI java utili
 
 ##Ant targets
 
+    create-project			Create a skeleton for a project in the "projects" folder. Properties: project
 	create-branch			Create a project branch based on a set of job templates. Properties: project+branch+branch+[branch.short]
 	create-pipeline-view  	Create a pipeline view. Properties: project+branch+[branch.short]
 	delete-branch    		Delete a project branch from Jenkins. Properties: project+branch+[branch.short]
@@ -49,6 +50,10 @@ This is achieved via the use of XML job templates and the Jenkins CLI java utili
 	eg. ant create-pipeline-view -Dproject=TestProject -Dbranch=5.2
 
 	This will create a pipeline view called TestProject 5.2 Pipeline
+
+##Setting the first job for the generated pipeline
+
+    Edit the file "pipeline_view" in the project, replacing "@PROJECT@[@BRANCH.SHORT@]-Build" with the name of the first job.
 
 ##Temporarily disabling a branch in Jenkins
 
