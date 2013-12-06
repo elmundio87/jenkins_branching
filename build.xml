@@ -1,6 +1,7 @@
 <project basedir="." name="jenkins-branching">
   <description>Easily branch in Jenkins using job templates</description>
   <property environment="env" />
+  <property name="BRANCH.SHORT" value="${BRANCH}">
   
   <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="lib/ant-contrib-1.0b3.jar"/>
     <tstamp>
