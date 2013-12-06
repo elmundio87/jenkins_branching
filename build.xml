@@ -1,19 +1,23 @@
 <project basedir="." name="jenkins-branching">
   <description>Easily branch in Jenkins using job templates</description>
-
+  <property environment="env" />
+  
   <taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="lib/ant-contrib-1.0b3.jar"/>
+    <tstamp>
+      <format property="timestamp" pattern="E dd/MM/yyyy HH:mm:ss" />
+  </tstamp>
   
   <property file="build.properties" />
 
-   <java fork="true" jar="lib/jenkins-cli.jar">
-      <arg value="-s"/>
-      <arg value="${jenkins.url}"/>
-      <arg value="login"/>
-      <arg value="--username"/>
-      <arg value="${jenkins.username}"/>
-      <arg value="--password"/>
-      <arg value="${jenkins.password}"/>
-    </java>
+  <java fork="true" jar="lib/jenkins-cli.jar">
+    <arg value="-s"/>
+    <arg value="${jenkins.url}"/>
+    <arg value="login"/>
+    <arg value="--username"/>
+    <arg value="${jenkins.username}"/>
+    <arg value="--password"/>
+    <arg value="${jenkins.password}"/>
+  </java>
     
   <target name="command-job" >
     <propertyregex property="job"
@@ -77,23 +81,7 @@
   <target name="filter-xml">
 
     <antcall target="clean"/>
-
-    <script language="javascript">
-      <![CDATA[
-            var before = project.getProperty("branch");
-            var letter = before.substring(0,1) ;
-            var number = before.match(/\d+(,\d+)?/);
-            if(number == null){
-              number = "";
-            }
-            else
-            {
-              number = number[0];
-            }
-            project.setProperty("branch.short", letter + number);
-          ]]>
-    </script>
-
+    
     <copy todir="temp">
       <fileset dir="projects/${project}">
         <include name="*"/>
@@ -102,8 +90,10 @@
         <filter token="PROJECT" value="${project}"/>
         <filter token="BRANCH" value="${branch}"/>
         <filter token="BRANCH.SHORT" value="${branch.short}"/>
+        <filter token="TFS_CHANGESET" value="${env.TFS_CHANGESET}"/>
+        <filter token="TIMESTAMP" value="${timestamp}"/>
       </filterset>
-      <mapper from="(.*)" to="${project} ${branch} - \1" type="regexp"/>
+      <mapper from="(.*)" to="${project}[${branch.short}]-\1" type="regexp"/>
     </copy>
 
     <copy todir="temp">
@@ -113,6 +103,7 @@
       <filterset>
         <filter token="PROJECT" value="${project}"/>
         <filter token="BRANCH" value="${branch}"/>
+        <filter token="BRANCH.SHORT" value="${branch.short}"/>
       </filterset>
     </copy>
 

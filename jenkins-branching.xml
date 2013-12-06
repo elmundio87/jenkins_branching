@@ -21,7 +21,7 @@
         </hudson.model.ChoiceParameterDefinition>
         <hudson.model.ChoiceParameterDefinition>
           <name>project</name>
-          <description>The project to branch</description>
+          <description>The name of the project to branch.</description>
           <choices class="java.util.Arrays$ArrayList">
             <a class="string-array">
               <string>@PROJECTS@</string>
@@ -30,13 +30,18 @@
         </hudson.model.ChoiceParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>branch</name>
-          <description>The name of the branch</description>
+          <description>The name of the branch in source control.</description>
+          <defaultValue>ReleaseXX</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>branch.short</name>
+          <description>A shortened name of the branch. Eg. Release08-TDD could be named "R08TDD". If in doubt, just set this to match the Branch parameter. The shorter the name, the less likely it is that the job will hit the Windows 256 character limit for filepath lengths.</description>
           <defaultValue>ReleaseXX</defaultValue>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
   </properties>
-  <scm class="hudson.plugins.tfs.TeamFoundationServerScm" plugin="tfs@1.20">
+  <scm class="hudson.plugins.tfs.TeamFoundationServerScm" plugin="tfs@3.0.1">
     <serverUrl>http://tfs:8080/tfs/</serverUrl>
     <projectPath>$/LightYear/jenkins/branch_automation</projectPath>
     <localPath>.</localPath>
@@ -50,15 +55,22 @@
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-  <triggers class="vector"/>
+  <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Ant plugin="ant@1.2">
-      <targets>${command}-branch ${command}-pipeline-view -Dproject=${project} -Dbranch=${branch}</targets>
+      <targets>${command}-branch ${command}-pipeline-view -Dproject=${project} -Dbranch=${branch} -Dbranch.short=${branch.short}</targets>
       <antName>(Default)</antName>
       <antOpts>-Xmx512m</antOpts>
     </hudson.tasks.Ant>
   </builders>
-  <publishers/>
+  <publishers>
+    <hudson.plugins.descriptionsetter.DescriptionSetterPublisher plugin="description-setter@1.8">
+      <regexp></regexp>
+      <regexpForFailed></regexpForFailed>
+      <description>${command} branch for ${project}[${branch}(${branch.short})]</description>
+      <setForMatrix>false</setForMatrix>
+    </hudson.plugins.descriptionsetter.DescriptionSetterPublisher>
+  </publishers>
   <buildWrappers/>
 </project>
