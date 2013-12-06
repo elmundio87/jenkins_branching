@@ -47,18 +47,18 @@ This is achieved via the use of XML job templates and the Jenkins CLI java utili
 
 	ant create-pipeline-view -Dproject=<project name> -Dbranch=<branch name>
 
-	eg. ant create-pipeline-view -Dproject=TestProject -Dbranch=5.2
+eg. ant create-pipeline-view -Dproject=TestProject -Dbranch=5.2
 
-	This will create a pipeline view called TestProject 5.2 Pipeline
+This will create a pipeline view called TestProject 5.2 Pipeline
 
 ##Setting the first job for the generated pipeline
 
-    Edit the file "pipeline_view" in the project, replacing "@PROJECT@[@BRANCH.SHORT@]-Build" with the name of the first job.
+Edit the file "pipeline_view" in the project, replacing "@PROJECT@[@BRANCH.SHORT@]-Build" with the name of the first job.
 
 ##Temporarily disabling a branch in Jenkins
 
 	ant disable-branch -Dproject=<project name> -Dbranch=<branch name>
 
-	eg. ant disable-branch -Dproject=TestProject -Dbranch=5.2
+eg. ant disable-branch -Dproject=TestProject -Dbranch=5.2
 
-	All jobs defined in the TestProject folder with branch 5.2 will be temporarily disabled
+All jobs defined in the TestProject folder with branch 5.2 will be temporarily disabled
